@@ -2,81 +2,121 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚠️ КРАФТМИР | КРИТИЧЕСКАЯ ОШИБКА</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             background: #1a1a2e;
             color: #eee;
-            font-family: 'Press Start 2P', cursive; /* Пиксельный шрифт */
-            margin: 0;
+            font-family: 'Press Start 2P', cursive;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            text-align: center;
+            position: relative;
         }
         
-        #game-screen {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3vh; /* Расстояние между блоками относительно экрана */
         }
         
         .glitch {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
+            font-size: clamp(16px, 4vw, 32px); /* Размер адаптируется: минимум 16px, максимум 32px */
             color: #ff0066;
             text-shadow: 2px 2px #00ffff;
             animation: glitch 1s infinite;
+            line-height: 1.4;
+            margin-bottom: 2vh;
         }
         
         @keyframes glitch {
-            0%, 100% { transform: translateX(-50%) skew(0deg); }
-            25% { transform: translateX(-50%) skew(2deg); }
-            75% { transform: translateX(-50%) skew(-2deg); }
+            0%, 100% { transform: skew(0deg); }
+            25% { transform: skew(2deg); }
+            75% { transform: skew(-2deg); }
+        }
+        
+        .status-box {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #0f0;
+            padding: 2vh;
+            border-radius: 10px;
+            font-size: clamp(10px, 2vw, 14px);
+            line-height: 1.8;
+            color: #666;
+            max-width: 100%;
         }
         
         .inventory {
-            position: absolute;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
-            gap: 20px;
-            opacity: 0.3; /* Заблокировано */
+            gap: 2vw;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0.3;
             filter: grayscale(100%);
+            transition: all 1s;
+            margin: 2vh 0;
         }
         
         .item {
-            width: 60px;
-            height: 60px;
+            width: clamp(40px, 10vw, 80px);
+            height: clamp(40px, 10vw, 80px);
             border: 3px solid #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 30px;
+            font-size: clamp(20px, 5vw, 40px);
             background: #000;
+            position: relative;
         }
         
         .locked::after {
             content: "🔒";
             position: absolute;
-            font-size: 20px;
+            font-size: clamp(12px, 3vw, 20px);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         
-        #console-hint {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
+        .console-hint {
             color: #00ff00;
-            font-size: 10px;
+            font-size: clamp(8px, 1.5vw, 12px);
             animation: blink 2s infinite;
+            margin-top: 2vh;
+            line-height: 1.6;
         }
         
-        @keyframes blink { 0%, 100% {opacity:1} 50% {opacity:0} }
+        @keyframes blink { 
+            0%, 100% {opacity:1} 
+            50% {opacity:0} 
+        }
         
         .success-overlay {
             display: none;
@@ -85,15 +125,28 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,255,0,0.2);
+            background: rgba(0,255,0,0.9);
             z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Для очень маленьких экранов */
+        @media (max-height: 600px) {
+            .container { gap: 1vh; }
+            .status-box { padding: 1vh; font-size: 10px; }
+            .inventory { gap: 1vw; }
         }
     </style>
 </head>
 <body>
-    <div id="game-screen">
+    <canvas id="matrix"></canvas>
+    
+    <div class="container" id="login-screen">
         <div class="glitch">⚠️ СИСТЕМА ВЗЛОМАНА ⚠️</div>
-        <div style="margin-top: 150px; color: #666; font-size: 12px;">
+        
+        <div class="status-box">
             > Потеряно связь с базой данных<br>
             > Инвентарь заблокирован<br>
             > Требуется доступ разработчика
@@ -106,67 +159,79 @@
             <div class="item">👑</div>
         </div>
         
-        <div id="console-hint">
-            [F12] Открыть панель разработчика → Console → Введи: dev_mode()
+        <div class="console-hint">
+            [F12] Открыть консоль → Console<br>
+            Введи команду: dev_mode()
         </div>
     </div>
     
     <div class="success-overlay" id="win">
-        <div style="margin-top: 20%; color: #0f0; font-size: 30px;">
+        <div style="color: #000; font-size: clamp(20px, 5vw, 40px); text-align: center;">
             ✅ ДОСТУП ПОЛУЧЕН!<br>
-            <span style="font-size: 12px; color: #fff;">Загрузка следующего уровня...</span>
+            <span style="font-size: clamp(12px, 3vw, 20px);">Загрузка уровня 2...</span>
         </div>
     </div>
 
     <script>
-        // Эффект "падающих блоков" на фоне
-        const chars = "▓▒░█▄▀■□";
-        setInterval(() => {
-            const el = document.createElement('div');
-            el.style.position = 'fixed';
-            el.style.left = Math.random() * 100 + '%';
-            el.style.top = '-20px';
-            el.style.color = 'rgba(0,255,0,0.1)';
-            el.style.fontSize = '20px';
-            el.style.fontFamily = 'monospace';
-            el.innerText = chars[Math.floor(Math.random() * chars.length)];
-            el.style.animation = 'fall 3s linear';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 3000);
-        }, 100);
+        // Эффект Матрицы
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         
-        // CSS для анимации падения
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes fall { to { transform: translateY(100vh); } }`;
-        document.head.appendChild(style);
+        const letters = "01";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let i=0; i<columns; i++) drops[i] = 1;
+        
+        function draw() {
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px monospace';
+            
+            for(let i=0; i<drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
 
-        // ГЛАВНАЯ ФУНКЦИЯ ДЛЯ КОНСОЛИ
+        // Функция активации
         window.dev_mode = function() {
             console.log("%c🔓 РЕЖИМ РАЗРАБОТЧИКА АКТИВИРОВАН", "color: #00ff00; font-size: 20px; font-weight: bold;");
-            console.log("%cТы теперь из команды создателей игры!", "color: cyan;");
+            console.log("%cТы в команде создателей игры!", "color: cyan;");
             
-            // Визуальная магия на странице
             const inv = document.getElementById('inv');
             inv.style.opacity = '1';
             inv.style.filter = 'none';
-            inv.style.transition = 'all 1s';
-            inv.style.transform = 'translateX(-50%) scale(1.2)';
+            inv.style.transform = 'scale(1.1)';
             
             document.querySelector('.glitch').innerHTML = "✅ СИСТЕМА ВОССТАНОВЛЕНА";
             document.querySelector('.glitch').style.color = "#00ff00";
+            document.querySelector('.glitch').style.textShadow = "0 0 20px #00ff00";
             
             setTimeout(() => {
-                document.getElementById('win').style.display = 'block';
-                console.log("Следующая миссия: bit.ly/kraft2");
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('win').style.display = 'flex';
+                console.log("Следующий уровень: твоя-ссылка-уровень2");
             }, 2000);
             
-            return "Добро пожаловать в команду разработчиков! Твой код: DEV-2024";
+            return "Добро пожаловать в команду разработчиков!";
         };
         
-        // Пасхалка для тех, кто откроет консоль раньше времени
-        console.log("%c🎮 СЕКРЕТНАЯ ИНФОРМАЦИЯ", "color: yellow; font-size: 16px; border: 2px solid yellow; padding: 5px;");
-        console.log("Главный_Баг оставил следы...");
+        console.log("%c🎮 СЕКРЕТ", "color: yellow; font-size: 16px;");
         console.log("Попробуй найти команду dev_mode()");
+        
+        // Адаптация при изменении размера окна
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
     </script>
 </body>
 </html>
